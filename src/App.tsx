@@ -115,3 +115,25 @@ function App() {
       <h2>-- DEBUG LOG --</h2>
       {debugInfo.map((msg, index) => (
         <p key={index} style={{margin: '5px 0', borderBottom: '1px solid #333'}}>{msg}</p>
+      ))}
+      {error && <p style={{color: 'red'}}>ОШИБКА НА ЭКРАНЕ: {error}</p>}
+    </div>
+  );
+
+  // Если есть ошибка или приложение загружается, показываем только отладку
+  if (isLoading || error) {
+    return renderDebugBlock();
+  }
+
+  // Если все хорошо, показываем и приложение, и отладку
+  return (
+    <div className="container">
+      {renderDebugBlock()}
+      <header className="header"><h1>Привет, {profile?.userName || 'гость'}!</h1></header>
+      <div className="card balance-card"><h2>Ваш кэшбэк</h2><p className="balance-amount">{profile?.cashbackBalance}<span> баллов</span></p></div>
+      <div className="card qr-card"><h3>Ваш QR-код</h3><div className="qr-container"><QRCode value={profile?.$id || ''} bgColor="#FFFFFF" fgColor="#1e1e1e" size={192} /></div><p className="qr-help">Покажите этот код кассиру для начисления или списания баллов</p></div>
+    </div>
+  );
+}
+
+export default App;
