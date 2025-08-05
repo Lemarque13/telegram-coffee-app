@@ -1,12 +1,15 @@
-// src/appwrite.ts (ВРЕМЕННАЯ ВЕРСИЯ ДЛЯ ОТЛАДКИ)
+// src/appwrite.ts
 
 import { Client, Account, Databases, Functions } from 'appwrite';
+
+const VITE_APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+const VITE_APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
 
 export const client = new Client();
 
 client
-    .setEndpoint("https://fra.cloud.appwrite.io/v1") // <-- Жестко прописали эндпоинт
-    .setProject("zen-coffee");                      // <-- Жестко прописали ID проекта
+    .setEndpoint(VITE_APPWRITE_ENDPOINT)
+    .setProject(VITE_APPWRITE_PROJECT_ID);
 
 export const account = new Account(client);
 export const databases = new Databases(client);

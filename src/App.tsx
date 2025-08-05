@@ -1,16 +1,16 @@
-// src/App.tsx (Финальная чистая версия)
+// src/App.tsx
 
 import { useState, useEffect } from 'react';
 import QRCode from "react-qr-code";
 import { account, databases, functions, Query } from './appwrite';
-import type { Profile } from './types'; // Убрали AuthResponse, так как он больше не нужен здесь
+import type { Profile } from './types';
 import './App.css';
 
-// --- Убедись, что тут твои реальные ID ---
-const AUTH_FUNCTION_ID = '68926887002236522883'; // <-- НЕ ЗАБУДЬ ВСТАВИТЬ СВОЙ ID
-const DB_ID = '68926674003cccc28681';
-const PROFILES_COLLECTION_ID = '6892668e002499775b19';
-// ------------------------------------------
+// --- ВСТАВЬ СЮДА НОВЫЕ ID ИЗ НОВОГО ПРОЕКТА ---
+const AUTH_FUNCTION_ID = '68928c96000b4c8292d6';
+const DB_ID = '68928aa400329d962f74';
+const PROFILES_COLLECTION_ID = '68928ab500175cc33218';
+// ---------------------------------------------
 
 declare global {
   interface Window {
@@ -37,7 +37,6 @@ function App() {
               JSON.stringify({ initData: window.Telegram.WebApp.initData })
             );
             
-            // Типизация для AuthResponse нужна была только для отладки, теперь упростим
             const result = JSON.parse(response.responseBody);
             
             if (result.success) {
