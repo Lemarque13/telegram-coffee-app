@@ -6,9 +6,9 @@ import { account, databases, functions, Query } from './appwrite';
 import type { Profile, AuthResponse } from './types';
 import './App.css';
 
-const AUTH_FUNCTION_ID = 'auth-telegram-user';
-const DB_ID = 'CoffeeShop';
-const PROFILES_COLLECTION_ID = 'profiles';
+const AUTH_FUNCTION_ID = '68926887002236522883';
+const DB_ID = '68926674003cccc28681';
+const PROFILES_COLLECTION_ID = '6892668e002499775b19';
 
 declare global {
   interface Window {
