@@ -1,4 +1,4 @@
-// src/App.tsx
+// src/App.tsx (Версия для отладки)
 
 import { useState, useEffect } from 'react';
 import QRCode from "react-qr-code";
@@ -6,11 +6,9 @@ import { account, databases, functions, Query } from './appwrite';
 import type { Profile, AuthResponse } from './types';
 import './App.css';
 
-// --- Убедись, что тут твои данные! ---
 const AUTH_FUNCTION_ID = 'auth-telegram-user';
 const DB_ID = 'CoffeeShop';
 const PROFILES_COLLECTION_ID = 'profiles';
-// ------------------------------------
 
 declare global {
   interface Window {
@@ -27,14 +25,20 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
+      // --- НАЧАЛО БЛОКА ОТЛАДКИ ---
+      console.log("Приложение запущено. Начинаем отладку.");
+      console.log("Проверяем объект window.Telegram:", window.Telegram);
+      if (window.Telegram) {
+        console.log("Объект window.Telegram.WebApp:", window.Telegram.WebApp);
+        console.log("Объект window.Telegram.WebApp.initData:", window.Telegram.WebApp.initData);
+      }
+      // --- КОНЕЦ БЛОКА ОТЛАДКИ ---
+
       try {
         await account.get();
       } catch (e) {
         try {
           if (window.Telegram?.WebApp?.initData) {
-            
-            // ИСПРАВЛЕНИЕ: Возвращаемся к самому простому и надежному способу вызова функции.
-            // Передаем только ID функции и тело запроса. Остальные параметры опциональны.
             const response = await functions.createExecution(
               AUTH_FUNCTION_ID,
               JSON.stringify({ initData: window.Telegram.WebApp.initData })
@@ -48,6 +52,8 @@ function App() {
                 throw new Error((result as { error: string }).error || 'Ошибка создания сессии');
             }
           } else {
+            // Если мы попадаем сюда, выводим в консоль причину
+            console.error("ПРОВАЛ: условие 'window.Telegram?.WebApp?.initData' не выполнено.");
             throw new Error("Приложение должно быть запущено в Telegram");
           }
         } catch (authError: any) {
@@ -59,13 +65,9 @@ function App() {
       
       try {
         const currentUser = await account.get();
-        
         const profileResponse = await databases.listDocuments<Profile>(
-            DB_ID,
-            PROFILES_COLLECTION_ID,
-            [Query.equal("userId", currentUser.$id)]
+            DB_ID, PROFILES_COLLECTION_ID, [Query.equal("userId", currentUser.$id)]
         );
-
         if (profileResponse.documents.length > 0) {
             setProfile(profileResponse.documents[0]);
         } else {
@@ -81,36 +83,21 @@ function App() {
     init();
   }, []);
 
+  // ... остальной код рендеринга без изменений ...
   if (isLoading) {
     return <div className="container loader">Загрузка...</div>;
   }
-  
   if (error) {
     return <div className="container error-container"><h2>Ошибка</h2><p>{error}</p></div>;
   }
-  
   if (!profile) {
     return <div className="container loader">Не удалось загрузить профиль...</div>;
   }
-
   return (
     <div className="container">
-      <header className="header">
-        <h1>Привет, {profile.userName || 'гость'}!</h1>
-      </header>
-      
-      <div className="card balance-card">
-        <h2>Ваш кэшбэк</h2>
-        <p className="balance-amount">{profile.cashbackBalance}<span> баллов</span></p>
-      </div>
-      
-      <div className="card qr-card">
-        <h3>Ваш QR-код</h3>
-        <div className="qr-container">
-            <QRCode value={profile.$id} bgColor="#FFFFFF" fgColor="#1e1e1e" size={192} />
-        </div>
-        <p className="qr-help">Покажите этот код кассиру для начисления или списания баллов</p>
-      </div>
+      <header className="header"><h1>Привет, {profile.userName || 'гость'}!</h1></header>
+      <div className="card balance-card"><h2>Ваш кэшбэк</h2><p className="balance-amount">{profile.cashbackBalance}<span> баллов</span></p></div>
+      <div className="card qr-card"><h3>Ваш QR-код</h3><div className="qr-container"><QRCode value={profile.$id} bgColor="#FFFFFF" fgColor="#1e1e1e" size={192} /></div><p className="qr-help">Покажите этот код кассиру для начисления или списания баллов</p></div>
     </div>
   );
 }
