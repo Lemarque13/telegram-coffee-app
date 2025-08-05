@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import QRCode from "react-qr-code";
-import { client, account, databases, functions, Query } from './appwrite'; // Импортируем из нашего файла
-import { Profile, AuthResponse } from './types'; // Импортируем наши типы
-import './App.css'; // Импортируем стили
+import { account, databases, functions, Query } from './appwrite';
+import type { Profile, AuthResponse } from './types';
+import './App.css';
 
-// --- ВАЖНО: ЗАПОЛНИ ЭТИ ДАННЫЕ! ---
-const AUTH_FUNCTION_ID = '68926887002236522883'; // ID твоей функции из Appwrite
-const DB_ID = '68926674003cccc28681'; // ID твоей базы данных из Appwrite
-const PROFILES_COLLECTION_ID = '6892668e002499775b19'; // ID твоей коллекции 'profiles'
+// --- Убедись, что тут твои данные! ---
+const AUTH_FUNCTION_ID = 'auth-telegram-user';
+const DB_ID = 'CoffeeShop';
+const PROFILES_COLLECTION_ID = 'profiles';
 // ------------------------------------
 
-// Объявляем глобальную переменную для Telegram Web App, чтобы TypeScript не ругался
 declare global {
   interface Window {
     Telegram?: {
@@ -29,25 +28,24 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        await account.get(); // Проверяем наличие сессии
+        await account.get();
       } catch (e) {
-        // Если сессии нет, создаем ее
         try {
           if (window.Telegram?.WebApp?.initData) {
+            
+            // ИСПРАВЛЕНИЕ: Возвращаемся к самому простому и надежному способу вызова функции.
+            // Передаем только ID функции и тело запроса. Остальные параметры опциональны.
             const response = await functions.createExecution(
               AUTH_FUNCTION_ID,
-              JSON.stringify({ initData: window.Telegram.WebApp.initData }),
-              false,
-              '/',
-              'POST'
+              JSON.stringify({ initData: window.Telegram.WebApp.initData })
             );
             
             const result: AuthResponse | { error: string } = JSON.parse(response.responseBody);
             
-            if ('success' in result) {
+            if ('success' in result && result.success) {
                 await account.createSession(result.session.id, result.session.secret);
             } else {
-                throw new Error(result.error || 'Ошибка создания сессии');
+                throw new Error((result as { error: string }).error || 'Ошибка создания сессии');
             }
           } else {
             throw new Error("Приложение должно быть запущено в Telegram");
@@ -59,17 +57,17 @@ function App() {
         }
       }
       
-      // Сессия есть, получаем данные
       try {
         const currentUser = await account.get();
-        const profileResponse = await databases.listDocuments(
+        
+        const profileResponse = await databases.listDocuments<Profile>(
             DB_ID,
             PROFILES_COLLECTION_ID,
             [Query.equal("userId", currentUser.$id)]
         );
 
         if (profileResponse.documents.length > 0) {
-            setProfile(profileResponse.documents[0] as Profile);
+            setProfile(profileResponse.documents[0]);
         } else {
             throw new Error("Профиль пользователя не найден в базе данных!");
         }
